@@ -1,0 +1,87 @@
+---
+# https://github.com/wpacket/pan-ansible/blob/master/pan_config_pull.yml
+- name: Backup Config from Synology
+  hosts: all
+  gather_facts: no
+  vars:
+    # Synology Server
+    ansible_remote_tmp: /tmp # Done to work with Synology NAS
+    ansible_port: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PORT', default=22) }}"
+    ansible_username: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_USERNAME') }}"
+    ansible_password: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PASSWORD') }}"
+    # SFTP Server
+    sftp_host: "{{ lookup('ansible.builtin.env', 'SFTP_HOST') }}"
+    sftp_port: "{{ lookup('ansible.builtin.env', 'SFTP_PORT', default=22) }}"
+    sftp_username: "{{ lookup('ansible.builtin.env', 'SFTP_USERNAME') }}"
+    sftp_password: "{{ lookup('ansible.builtin.env', 'SFTP_PASSWORD') }}"
+    sftp_path: "{{ lookup('ansible.builtin.env', 'SFTP_PATH') }}"
+    # Pushover
+    pushover_user: "{{ lookup('ansible.builtin.env', 'PUSHOVER_USER_KEY') }}"
+    pushover_token: "{{ lookup('ansible.builtin.env', 'PUSHOVER_APP_TOKEN') }}"
+  tasks:
+    - name: Perform Backup
+      block:
+        - name: Create Config File Path
+          ansible.builtin.set_fact:
+            backup_config_file: "{{ ansible_host }}__config__{{ now().strftime('%Y.%m.%d') }}.dss"
+
+        - name: Remove Old Config if it Exists
+          ansible.builtin.command: "rm -f /tmp/{{ backup_config_file }}"
+          vars:
+            ansible_become: true
+            ansible_become_method: sudo
+            ansible_shell_executable: /bin/sh
+            ansible_become_pass: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PASSWORD') }}"
+
+        - name: Execute Config Export
+          ansible.builtin.command: "/usr/syno/bin/synoconfbkp export --filepath=/tmp/{{ backup_config_file }}"
+          vars:
+            ansible_become: true
+            ansible_become_method: sudo
+            ansible_shell_executable: /bin/sh
+            ansible_become_pass: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PASSWORD') }}"
+
+        - name: Create .downloads/ Directory
+          delegate_to: localhost
+          ansible.builtin.file:
+            path: .downloads/
+            state: directory
+            mode: '0755'
+
+        - name: Download Config File
+          ansible.builtin.fetch:
+            src: "/tmp/{{ backup_config_file }}"
+            dest: .downloads/
+            flat: true
+
+        - name: Execute Deleting Config File
+          ansible.builtin.command: "rm /tmp/{{ backup_config_file }}"
+          vars:
+            ansible_become: true
+            ansible_become_method: sudo
+            ansible_shell_executable: /bin/sh
+            ansible_become_pass: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PASSWORD') }}"
+
+        - name: Upload Config to SFTP
+          delegate_to: localhost
+          ansible.builtin.shell: "echo 'put .downloads/{{ backup_config_file }}' | sshpass -p '{{ sftp_password }}' sftp -o StrictHostKeyChecking=no -P {{ sftp_port }} {{ sftp_username }}@{{ sftp_host }}:{{ sftp_path }}"
+
+        - name: Delete Config File Locally
+          delegate_to: localhost
+          ansible.builtin.file:
+            path: "./downloads/{{ backup_config_file }}"
+            state: absent
+
+      rescue:
+        - name: Notify Admin of Failed Backup
+          delegate_to: localhost
+          ansible.builtin.uri:
+            url: https://api.pushover.net/1/messages.json
+            method: POST
+            headers: 
+              Content-Type: application/json
+            body_format: json
+            body:
+              user: "{{ pushover_user }}"
+              token: "{{ pushover_token }}"
+              message: "❌ Unable to perform config backup for {{ inventory_hostname }}!"
