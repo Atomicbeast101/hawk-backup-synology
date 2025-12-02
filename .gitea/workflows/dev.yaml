@@ -82,7 +82,6 @@ jobs:
 
   report:
     name: Report
-    runs-on: ubuntu-latest
     continue-on-error: true
     # needs: 
     #   - release
