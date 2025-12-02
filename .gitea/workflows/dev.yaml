@@ -94,8 +94,7 @@ jobs:
           echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print $2}') >> $GITHUB_OUTPUT
           echo DATE_RELEASE=$(echo "`date +'%Y.%m.%d'`") >> $GITHUB_OUTPUT
 
-      - runs-on: ubuntu-latest
-        uses: https://gitea.potatolab.dev/adam/gitea-workflows@dev
+      - uses: ${{ vars.LOCAL_ACR_URL }}/${{ vars.LOCAL_ACR_USERNAME }}/gitea-workflows@dev
         with:
           success: true # needs.release.result == 'success' # && needs.test.result == 'success'
           repo_name: ${{ steps.meta.outputs.REPO_NAME }}
