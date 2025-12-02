@@ -18,14 +18,8 @@ jobs:
     container:
       image: catthehacker/ubuntu:act-latest
     steps:
-      - name: Install Git
-        run: apt-get update && apt-get install -y git
-
       - name: Checkout Repo
         uses: actions/checkout@v4
-
-      # - name: Set up QEMU
-      #   uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker BuildX
         uses: docker/setup-buildx-action@v3
