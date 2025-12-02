@@ -100,6 +100,8 @@ jobs:
           repo_name: ${{ steps.meta.outputs.REPO_NAME }}
           image_tag_ending: ${{ env.IMAGE_TAG_ENDING }}
           date_release: ${{ steps.meta.outputs.DATE_RELEASE }}
+          pushover_user: ${{ secrets.PUSHOVER_USER }}
+          pushover_token: ${{ secrets.PUSHOVER_TOKEN }}
 
       # - name: Report of Success
       #   if: needs.release.result == 'success' && needs.deploy.result == 'success'
