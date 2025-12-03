@@ -10,11 +10,8 @@ env:
 
 jobs:
   release:
-    strategy:
-      matrix:
-        architecture: [x86_64, arm64]
-    name: Release (${{ matrix.architecture }})
-    runs-on: ${{ matrix.architecture == 'x86_64' && 'ubuntu-latest' || matrix.architecture == 'arm64' && 'ubuntu-latest-arm' }} 
+    name: Release
+    runs-on: ubuntu-latest
     container:
       image: catthehacker/ubuntu:act-latest
     steps:
@@ -41,7 +38,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: |
-            linux/${{ matrix.architecture }}
+            linux/amd64
+            linux/arm64
+            linux/aarch64
           push: true
           tags: |
             ${{ env.IMAGE_BASE }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}${{ env.IMAGE_TAG_ENDING }}
