@@ -40,7 +40,6 @@ jobs:
           platforms: |
             linux/amd64
             linux/arm64
-            linux/aarch64
           push: true
           tags: |
             ${{ env.IMAGE_BASE }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.DATE_RELEASE }}${{ env.IMAGE_TAG_ENDING }}
