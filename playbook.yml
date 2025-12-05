@@ -23,7 +23,7 @@
       block:
         - name: Create Config File Path
           ansible.builtin.set_fact:
-            backup_config_file: "{{ ansible_host }}__config__{{ now().strftime('%Y.%m.%d') }}.dss"
+            backup_config_file: "{{ inventory_hostname }}__config__{{ now().strftime('%Y.%m.%d') }}.dss"
 
         - name: Create .downloads/ Directory
           delegate_to: localhost
