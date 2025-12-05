@@ -25,6 +25,13 @@
           ansible.builtin.set_fact:
             backup_config_file: "{{ ansible_host }}__config__{{ now().strftime('%Y.%m.%d') }}.dss"
 
+        - name: Create .downloads/ Directory
+          delegate_to: localhost
+          ansible.builtin.file:
+            path: .downloads/
+            state: directory
+            mode: '0755'
+
         - name: Remove Old Config if it Exists
           ansible.builtin.command: "rm -f /tmp/{{ backup_config_file }}"
           vars:
@@ -40,13 +47,6 @@
             ansible_become_method: sudo
             ansible_shell_executable: /bin/sh
             ansible_become_pass: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PASSWORD') }}"
-
-        - name: Create .downloads/ Directory
-          delegate_to: localhost
-          ansible.builtin.file:
-            path: .downloads/
-            state: directory
-            mode: '0755'
 
         - name: Download Config File
           ansible.builtin.fetch:

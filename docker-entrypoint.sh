@@ -10,10 +10,13 @@ done
 echo "✅ All required environment variables are set."
 
 # Setup .env environment
+echo "Setting up environment..."
 ./setup.sh
 
 # Configure cron schedule
+echo "Scheduling backup job..."
 echo "$CRON_SCHEDULE /app/run.sh >> /var/log/cron.log 2>&1" > /etc/crontabs/root
 
 # Run cron in foreground
-exec crond -f
+echo "Started cron job!"
+exec crond -f && tail -f /var/log/cron.log

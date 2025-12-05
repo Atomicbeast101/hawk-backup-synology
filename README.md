@@ -7,16 +7,46 @@ Works with the following Synology NAS so far (others should work as long as SSH 
 - Synology DS423
 - Synology DS423+
 
-## Setup
+## Requirements
 
-Synology NAS must have SSH enabled for an admin account to run the following commands:
-    - `sudo /usr/syno/bin/synoconfbkp export --filepath=/tmp/<auto_generated_filename>.dss`
-    - `sudo rm /tmp/<auto_generated_filename>.dss` (file will be downloaded to host running Ansible playbook before executing this)
+* Synology NAS must have SSH enabled for an admin account.
+* `/usr/syno/bin/synoconfbkp` command exists in Synology NAS CLI.
 
-Once the environment variables are set (see below for details), run it via Docker-compatible environment such as Synology, Kubernetes, etc:
+## How it Works
+
+Whenever the cron schedule hits, it runs an Ansible playbook that does the following:
+1) Create `/app/.downloads` folder.
+2) Remove the existing generated config file from `/tmp` folder if it exists.
+3) Run the following command to generate the config file:
 ```bash
-docker run adam/hawk-backup-switch:latest
+/usr/syno/bin/synoconfbkp export --filepath=/tmp/<auto_generated_filename>.dss
 ```
+4) Download config to `/app/.downloads` from Synology NAS's `/tmp` folder.
+5) Remove generated config file from `/tmp` folder.
+6) Uploads that config file to SFTP endpoint.
+7) Removes the config file from `/app/.downloads`.
+
+If any of the tasks above fails, a Pushover notification will be sent stating that the backup failed for a specific firewall (by hostname).
+
+## Setup - Docker
+
+Here's an example of how to run this application in Docker:
+
+```bash
+docker run \
+    -e SYNOLOGY_HOST=nas.example.com \
+    -e SYNOLOGY_USERNAME=admin \
+    -e SYNOLOGY_PASSWORD=<password> \
+    -e SFTP_HOST=sftp.example.com \
+    -e SFTP_USERNAME=backup \
+    -e SFTP_PASSWORD=<password> \
+    -e SFTP_PATH="/path/to/directory" \
+    -e PUSHOVER_USER_KEY=<user_key> \
+    -e PUSHOVER_APP_TOKEN=<user_password> \
+    ghcr.io/atomicbeast101/hawk-backup-synology:latest
+```
+
+More details on the environment variables can be found below.
 
 ## Environment Variables
 
