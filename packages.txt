@@ -1,5 +1,6 @@
 openssh-client
 busybox-suid
+sshpass
 python3
 py3-pip
 cronie
