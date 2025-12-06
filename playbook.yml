@@ -7,7 +7,7 @@
     # Synology Server
     ansible_remote_tmp: /tmp # Done to work with Synology NAS
     ansible_port: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PORT', default=22) }}"
-    ansible_username: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_USERNAME') }}"
+    ansible_user: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_USERNAME') }}"
     ansible_password: "{{ lookup('ansible.builtin.env', 'SYNOLOGY_PASSWORD') }}"
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" # Prevents built-in SSH key validation as it's using standard username/password to access it
     # SFTP Server
