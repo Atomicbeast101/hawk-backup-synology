@@ -20,7 +20,7 @@
     pushover_user: "{{ lookup('ansible.builtin.env', 'PUSHOVER_USER_KEY') }}"
     pushover_token: "{{ lookup('ansible.builtin.env', 'PUSHOVER_APP_TOKEN') }}"
     # Cleanup Old Backups
-    backup_retention_in_days: "{{ lookup('ansible.builtin.env', 'BACKUP_RETENTION_IN_DAYS', default=10) }}"
+    backup_retention_in_days: "{{ lookup('ansible.builtin.env', 'BACKUP_RETENTION_IN_DAYS', default=10) | int }}"
   tasks:
     - name: Perform Backup
       block:
