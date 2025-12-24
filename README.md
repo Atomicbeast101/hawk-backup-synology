@@ -25,6 +25,7 @@ Whenever the cron schedule hits, it runs an Ansible playbook that does the follo
 5) Remove generated config file from `/tmp` folder.
 6) Uploads that config file to SFTP endpoint.
 7) Removes the config file from `/app/.downloads`.
+8) Checks SFTP endpoint for any old backups to remove.
 
 If any of the tasks above fails, a Pushover notification will be sent stating that the backup failed for a specific synology (by hostname).
 
@@ -63,3 +64,4 @@ More details on the environment variables can be found below.
 | SFTP_PATH | Destination path in SFTP server to store config file in. | N/A |
 | PUSHOVER_USER_KEY | User key for Pushover notifications. Gets sent out for failed backups. | N/A |
 | PUSHOVER_APP_TOKEN | App token for Pushover notifications. Gets sent out for failed backups. | N/A |
+| BACKUP_RETENTION_IN_DAYS | # of days to keep historical backups for. | 10 |
